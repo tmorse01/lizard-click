@@ -12,37 +12,43 @@ function App() {
     }
   }
 
+  const lizardEmojis = '🦎'.repeat(count)
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-100 to-blue-100 flex flex-col items-center justify-center p-8">
-      <div className="text-center space-y-8">
-        <h1 className="text-6xl font-bold text-green-800 mb-4">
-          🦎 Lizard Click
-        </h1>
-        <p className="text-xl text-gray-600 mb-8">
-          "Lizard! Lizard! Lizard!" - Click the button and unleash the lizard power!
-        </p>
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-6xl space-y-8">
         
-        <LizardButton onCountChange={setCount} />
-        
-        <div className="text-center space-y-4">
-          <div className="text-4xl font-bold text-green-700">
-            Clicks: {count}
+        {/* Large Textbox Display */}
+        <div className="bg-gray-900 rounded-2xl p-8 min-h-[400px] border-4 border-gray-700 shadow-2xl">
+          <div className="text-green-400 font-mono text-2xl mb-4">
+            Lizards: {count}
           </div>
+          <div 
+            className="text-green-400 font-mono text-6xl leading-relaxed break-all overflow-y-auto max-h-80"
+            style={{ wordBreak: 'break-all' }}
+          >
+            {lizardEmojis || <span className="text-gray-500 text-3xl">Click the button to add lizards...</span>}
+          </div>
+        </div>
+        
+        {/* Large Button */}
+        <div className="flex flex-col items-center space-y-6">
+          <LizardButton onCountChange={setCount} count={count} />
           
           <button
             onClick={handleReset}
             className="
               bg-red-500 hover:bg-red-600 active:bg-red-700
-              text-white font-semibold
-              px-6 py-2 rounded-lg
-              transform hover:scale-105 active:scale-95
+              text-white font-bold text-xl
+              px-8 py-4 rounded-xl
               transition-all duration-150
               focus:outline-none focus:ring-4 focus:ring-red-300
               focus:ring-opacity-50
+              shadow-lg
             "
-            aria-label="Reset click counter"
+            aria-label="Reset lizard counter"
           >
-            Reset
+            Reset All Lizards
           </button>
         </div>
       </div>

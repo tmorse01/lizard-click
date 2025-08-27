@@ -3,17 +3,17 @@ import useLocalStorage from '../hooks/useLocalStorage';
 
 interface LizardButtonProps {
   onCountChange?: (count: number) => void;
+  count: number;
 }
 
-const LizardButton: React.FC<LizardButtonProps> = ({ onCountChange }) => {
-  const [count, setCount] = useLocalStorage<number>('lizardClickCount', 0);
+const LizardButton: React.FC<LizardButtonProps> = ({ onCountChange, count }) => {
   const [sessionClicks, setSessionClicks] = useState(0);
   const [showBubble, setShowBubble] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [audioReady, setAudioReady] = useState(false);
 
   useEffect(() => {
-    audioRef.current = new Audio('/public/sounds/lizard.mp3');
+    audioRef.current = new Audio('/sounds/lizard.mp3');
     audioRef.current.preload = 'auto';
     
     const handleCanPlayThrough = () => setAudioReady(true);
@@ -115,7 +115,6 @@ const LizardButton: React.FC<LizardButtonProps> = ({ onCountChange }) => {
     const newCount = count + 1;
     const newSessionClicks = sessionClicks + 1;
     
-    setCount(newCount);
     setSessionClicks(newSessionClicks);
     onCountChange?.(newCount);
 
@@ -146,24 +145,24 @@ const LizardButton: React.FC<LizardButtonProps> = ({ onCountChange }) => {
   }, [handleClick]);
 
   return (
-    <div className="relative flex flex-col items-center">
+    <div className="relative">
       <button
         onClick={handleClick}
         onKeyDown={handleKeyDown}
         className="
           bg-green-500 hover:bg-green-600 active:bg-green-700
-          text-white font-bold text-6xl
-          px-12 py-8 rounded-2xl
+          border-4 border-green-700 rounded-3xl
+          text-9xl w-64 h-64
           transform hover:scale-105 active:scale-95
-          transition-all duration-150
-          shadow-lg hover:shadow-xl
+          transition-all duration-75
+          shadow-2xl hover:shadow-3xl
           focus:outline-none focus:ring-4 focus:ring-green-300
           focus:ring-opacity-50
         "
-        aria-label={`Lizard button - clicked ${count} times`}
+        aria-label={`Lizard key - clicked ${count} times`}
         tabIndex={0}
       >
-        🦎 LIZARD
+        🦎
       </button>
       
       {showBubble && (
