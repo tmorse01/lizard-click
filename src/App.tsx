@@ -2,10 +2,17 @@ import { useState, useEffect, useRef } from "react";
 import useLocalStorage from "./hooks/useLocalStorage";
 import "./App.css";
 
+interface MessageHistoryItem {
+  content: string;
+  timestamp: Date;
+}
+
 function App() {
   const [count, setCount] = useLocalStorage<number>("lizardClickCount", 0);
   const [currentMessage, setCurrentMessage] = useState("");
+  const [messageHistory, setMessageHistory] = useLocalStorage<MessageHistoryItem[]>("lizardMessageHistory", []);
   const messageAreaRef = useRef<HTMLDivElement>(null);
+  const historyRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when message changes
   useEffect(() => {
@@ -13,6 +20,13 @@ function App() {
       messageAreaRef.current.scrollTop = messageAreaRef.current.scrollHeight;
     }
   }, [currentMessage]);
+
+  // Auto-scroll history to bottom when new message is added
+  useEffect(() => {
+    if (historyRef.current) {
+      historyRef.current.scrollTop = historyRef.current.scrollHeight;
+    }
+  }, [messageHistory]);
 
   const handleTypeLizard = async () => {
     const newCount = count + 1;
@@ -31,6 +45,11 @@ function App() {
 
   const handleSendMessage = () => {
     if (currentMessage.trim()) {
+      const newHistoryItem: MessageHistoryItem = {
+        content: currentMessage,
+        timestamp: new Date()
+      };
+      setMessageHistory(prev => [...prev, newHistoryItem]);
       setCurrentMessage("");
     }
   };
@@ -39,11 +58,16 @@ function App() {
     if (window.confirm("Clear everything?")) {
       setCurrentMessage("");
       setCount(0);
+      setMessageHistory([]);
     }
   };
 
   const handleDisabledKey = () => {
     // Do nothing - these keys don't work!
+  };
+
+  const formatTimestamp = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   };
 
   const emojiKeys = [
@@ -62,99 +86,121 @@ function App() {
   ];
 
   return (
-    <div className="h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col max-w-4xl mx-auto overflow-hidden">
-      {/* iPad Header */}
-      <div className="bg-white shadow-sm px-6 py-4 flex items-center justify-between border-b flex-shrink-0">
-        <div className="flex items-center space-x-4">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="bg-white shadow-sm px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-b flex-shrink-0">
+        <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
           <img
             src="/lizard.webp"
             alt="Derpy Lizard"
-            className="w-12 h-12 rounded-full border-2 border-green-500"
+            className="w-8 h-8 sm:w-12 sm:h-12 rounded-full border-2 border-green-500 flex-shrink-0"
           />
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-2xl font-bold text-gray-800 truncate">
               Lizard Typing Simulator
             </h1>
           </div>
         </div>
         <button
           onClick={handleReset}
-          className="text-red-500 font-medium hover:text-red-600"
+          className="text-red-500 font-medium hover:text-red-600 text-sm sm:text-base flex-shrink-0"
         >
           Reset
         </button>
       </div>
 
-      {/* Typing Area */}
-      <div className="flex-1 p-6 flex flex-col min-h-0">
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border-2 border-gray-200">
-          <div className="text-sm text-gray-500 mb-2 flex-shrink-0">
-            Lizards typed: {count} | Current message:
+      {/* Message History - Flexible area */}
+      <div className="flex-1 overflow-hidden p-3 sm:p-6">
+        <div className="h-full bg-white rounded-2xl shadow-lg border-2 border-gray-200 flex flex-col">
+          <div className="text-xs sm:text-sm text-gray-500 p-3 sm:p-4 border-b flex-shrink-0">
+            Message History 📜 | Lizards typed: {count}
           </div>
           <div
-            ref={messageAreaRef}
-            className="p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 overflow-y-auto h-48"
+            ref={historyRef}
+            className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3"
           >
-            <div className="text-6xl leading-relaxed">
-              {currentMessage || (
-                <span className="text-gray-400 text-2xl">
-                  Start typing lizards...
+            {messageHistory.length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                <span className="text-gray-400 text-sm sm:text-base">
+                  No lizard messages yet... Start typing! 🦎
                 </span>
-              )}
-            </div>
-          </div>
-          <div className="mt-4 flex items-center space-x-2 flex-shrink-0">
-            <img src="/lizard.webp" alt="Derpy Lizard" className="w-6 h-6" />
-            <span className="text-sm text-gray-600">
-              Pro tip: Only the lizard key works!
-            </span>
-          </div>
-        </div>
-
-        {/* Emoji Keyboard */}
-        <div className="bg-gray-100 rounded-2xl p-6 shadow-inner flex-shrink-0">
-          <div className="flex gap-4">
-            {/* Left Column - Emoji Grid */}
-            <div className="flex-1">
-              <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
-                {emojiKeys.map((key, index) => (
-                  <button
-                    key={index}
-                    onClick={key.onClick}
-                    className={`
-                      w-16 h-16 rounded-xl text-3xl flex items-center justify-center
-                      transition-all duration-150 border-2
-                      ${
-                        key.active
-                          ? "bg-green-100 border-green-400 hover:bg-green-200 shadow-lg transform hover:scale-110"
-                          : "bg-white border-gray-300 hover:bg-gray-50 opacity-60 cursor-not-allowed"
-                      }
-                    `}
-                    disabled={!key.active}
-                  >
-                    {key.emoji}
-                  </button>
-                ))}
               </div>
-            </div>
-
-            {/* Right Column - Send Button */}
-            <div className="flex flex-col">
-              <button
-                onClick={handleSendMessage}
-                disabled={!currentMessage.trim()}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-150 text-sm ${
-                  currentMessage.trim()
-                    ? "bg-blue-500 text-white hover:bg-blue-600 shadow-md"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
-              >
-                Send
-              </button>
-            </div>
+            ) : (
+              messageHistory.map((msg, index) => (
+                <div key={index} className="flex justify-end">
+                  <div className="flex flex-col items-end max-w-xs sm:max-w-sm">
+                    <div className="bg-blue-500 text-white rounded-2xl rounded-tr-md px-4 py-2 shadow-md">
+                      <span className="text-lg sm:text-xl break-all">
+                        {msg.content}
+                      </span>
+                    </div>
+                    <span className="text-xs text-gray-400 font-mono mt-1">
+                      {formatTimestamp(new Date(msg.timestamp))}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
+
+      {/* Text Input Area - iMessage style */}
+      <div className="bg-white border-t border-gray-200 p-3 sm:p-4 flex-shrink-0">
+        <div className="flex items-start gap-2 sm:gap-3">
+          <div className="flex-1">
+            <div
+              ref={messageAreaRef}
+              className="bg-gray-100 rounded-2xl px-4 py-2 sm:py-3 min-h-[2.5rem] max-h-32 overflow-y-auto border border-gray-300"
+            >
+              <div className="text-base sm:text-lg leading-relaxed break-all">
+                {currentMessage || (
+                  <span className="text-gray-400 text-sm sm:text-base">
+                    Type lizards here...
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={handleSendMessage}
+            disabled={!currentMessage.trim()}
+            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-bold transition-all duration-150 ${
+              currentMessage.trim()
+                ? "bg-blue-500 hover:bg-blue-600 shadow-md"
+                : "bg-gray-300 cursor-not-allowed"
+            }`}
+          >
+            ↑
+          </button>
+        </div>
+      </div>
+
+      {/* Emoji Keyboard */}
+      <div className="bg-gray-50 border-t border-gray-200 p-3 sm:p-4 flex-shrink-0">
+          <div className="w-full">
+            <div className="flex flex-wrap justify-start gap-2 sm:gap-3 md:gap-4">
+              {emojiKeys.map((key, index) => (
+                <button
+                  key={index}
+                  onClick={key.onClick}
+                  className={`
+                    w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl text-lg sm:text-2xl md:text-3xl 
+                    flex items-center justify-center transition-all duration-150 border-2 flex-shrink-0
+                    ${
+                      key.active
+                        ? "bg-green-100 border-green-400 hover:bg-green-200 shadow-lg transform hover:scale-110"
+                        : "bg-white border-gray-300 hover:bg-gray-50 opacity-60 cursor-not-allowed"
+                    }
+                  `}
+                  disabled={!key.active}
+                >
+                  {key.emoji}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
     </div>
   );
 }
