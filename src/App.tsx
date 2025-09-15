@@ -10,7 +10,9 @@ interface MessageHistoryItem {
 function App() {
   const [count, setCount] = useLocalStorage<number>("lizardClickCount", 0);
   const [currentMessage, setCurrentMessage] = useState("");
-  const [messageHistory, setMessageHistory] = useLocalStorage<MessageHistoryItem[]>("lizardMessageHistory", []);
+  const [messageHistory, setMessageHistory] = useLocalStorage<
+    MessageHistoryItem[]
+  >("lizardMessageHistory", []);
   const messageAreaRef = useRef<HTMLDivElement>(null);
   const historyRef = useRef<HTMLDivElement>(null);
 
@@ -47,9 +49,9 @@ function App() {
     if (currentMessage.trim()) {
       const newHistoryItem: MessageHistoryItem = {
         content: currentMessage,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
-      setMessageHistory(prev => [...prev, newHistoryItem]);
+      setMessageHistory((prev) => [...prev, newHistoryItem]);
       setCurrentMessage("");
     }
   };
@@ -67,7 +69,11 @@ function App() {
   };
 
   const formatTimestamp = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
   };
 
   const emojiKeys = [
@@ -171,36 +177,52 @@ function App() {
                 : "bg-gray-300 cursor-not-allowed"
             }`}
           >
-            ↑
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              className="size-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
+              />
+            </svg>
           </button>
         </div>
       </div>
 
-      {/* Emoji Keyboard */}
+      {/* Emoji Keyboard - Phone style grid */}
       <div className="bg-gray-50 border-t border-gray-200 p-3 sm:p-4 flex-shrink-0">
-          <div className="w-full">
-            <div className="flex flex-wrap justify-start gap-2 sm:gap-3 md:gap-4">
-              {emojiKeys.map((key, index) => (
-                <button
-                  key={index}
-                  onClick={key.onClick}
-                  className={`
-                    w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl text-lg sm:text-2xl md:text-3xl 
-                    flex items-center justify-center transition-all duration-150 border-2 flex-shrink-0
-                    ${
-                      key.active
-                        ? "bg-green-100 border-green-400 hover:bg-green-200 shadow-lg transform hover:scale-110"
-                        : "bg-white border-gray-300 hover:bg-gray-50 opacity-60 cursor-not-allowed"
-                    }
-                  `}
-                  disabled={!key.active}
-                >
-                  {key.emoji}
-                </button>
-              ))}
-            </div>
+        <div className="w-full">
+          <div
+            className="grid grid-cols-6 gap-2 sm:gap-3 md:gap-4 justify-items-center"
+            style={{ maxWidth: "100%" }}
+          >
+            {emojiKeys.map((key, index) => (
+              <button
+                key={index}
+                onClick={key.onClick}
+                className={`
+                  w-full aspect-square min-w-[2.5rem] max-w-[3.5rem] sm:min-w-[3rem] sm:max-w-[4rem] md:min-w-[3.5rem] md:max-w-[4.5rem] rounded-xl text-lg sm:text-2xl md:text-3xl 
+                  flex items-center justify-center transition-all duration-150 border-2
+                  ${
+                    key.active
+                      ? "bg-green-100 border-green-400 hover:bg-green-200 shadow-lg transform hover:scale-110"
+                      : "bg-white border-gray-300 hover:bg-gray-50 opacity-60 cursor-not-allowed"
+                  }
+                `}
+                disabled={!key.active}
+              >
+                {key.emoji}
+              </button>
+            ))}
           </div>
         </div>
+      </div>
     </div>
   );
 }
